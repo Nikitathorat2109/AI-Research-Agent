@@ -1,0 +1,147 @@
+<!-- Updated templates/index.html -->
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <section class="search-section" id="search-section">
+        <h2>Research a Topic</h2>
+        <form id="research-form" action="{{ url_for('research') }}" method="POST">
+            <input 
+                type="text" 
+                name="query"
+                id="query-input" 
+                placeholder="Enter your research query (e.g., 'Latest research on AI in education')"
+                required
+            >
+            <button type="submit" id="submit-btn">Research</button>
+        </form>
+    </section>
+    
+    <!-- Loading indicator -->
+    <div class="loading-container" id="loading-container">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Researching your query...</div>
+        <div class="loading-steps">
+            <div class="step" id="step-search">Searching for relevant sources</div>
+            <div class="step" id="step-extract">Extracting content from sources</div>
+            <div class="step" id="step-analyze">Analyzing content with AI</div>
+            <div class="step" id="step-save">Generating final report</div>
+        </div>
+    </div>
+    
+    <section class="history-section">
+        <h2>Recent Reports</h2>
+        {% if reports %}
+            <div class="reports-grid">
+                {% for report in reports %}
+                <div class="report-card">
+                    <h3><a href="{{ url_for('view_report', report_id=report.id) }}">{{ report.query }}</a></h3>
+                    <p class="date">{{ report.created_at }}</p>
+                    <p class="summary-preview">{{ report.summary[:150] }}...</p>
+                    <div class="sources-count">{{ report.sources|length }} sources</div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="no-reports">No reports yet. Start by researching a topic above!</p>
+        {% endif %}
+    </section>
+</div>
+
+<script>
+document.getElementById('research-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const query = document.getElementById('query-input').value.trim();
+    if (!query) return;
+    
+    // Show loading indicator
+    showLoading();
+    
+    // Start step progression
+    startStepProgression();
+    
+    // Submit the actual form
+    submitResearchQuery(query);
+});
+
+function showLoading() {
+    document.getElementById('search-section').style.display = 'none';
+    document.querySelector('.history-section').style.display = 'none';
+    document.getElementById('loading-container').classList.add('show');
+    
+    // Reset all steps
+    document.querySelectorAll('.step').forEach(step => {
+        step.classList.remove('active', 'completed');
+    });
+}
+
+function startStepProgression() {
+    const steps = [
+        { id: 'step-search', delay: 500 },
+        { id: 'step-extract', delay: 2000 },
+        { id: 'step-analyze', delay: 2500 },
+        { id: 'step-save', delay: 1000 }
+    ];
+    
+    let currentDelay = 0;
+    
+    steps.forEach((step, index) => {
+        setTimeout(() => {
+            // Mark current step as active
+            document.getElementById(step.id).classList.add('active');
+            
+            // Mark previous steps as completed
+            steps.slice(0, index).forEach(prevStep => {
+                const prevElement = document.getElementById(prevStep.id);
+                prevElement.classList.remove('active');
+                prevElement.classList.add('completed');
+            });
+        }, currentDelay);
+        
+        currentDelay += step.delay;
+    });
+}
+
+function submitResearchQuery(query) {
+    const formData = new FormData();
+    formData.append('query', query);
+    
+    fetch('/research', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => {
+        if (response.redirected) {
+            // Complete the last step before redirecting
+            setTimeout(() => {
+                document.getElementById('step-save').classList.remove('active');
+                document.getElementById('step-save').classList.add('completed');
+                setTimeout(() => {
+                    window.location.href = response.url;
+                }, 500);
+            }, 500);
+        } else {
+            return response.json();
+        }
+    })
+    .then(data => {
+        if (data && data.error) {
+            alert('Error: ' + data.error);
+            hideLoading();
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred during research');
+        hideLoading();
+    });
+}
+
+function hideLoading() {
+    document.getElementById('search-section').style.display = 'block';
+    document.querySelector('.history-section').style.display = 'block';
+    document.getElementById('loading-container').classList.remove('show');
+}
+</script>
+{% endblock %}
