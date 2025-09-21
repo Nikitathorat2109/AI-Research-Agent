@@ -6,7 +6,7 @@ A simple AI-powered research agent that finds sources, extracts content, and gen
 
 Check out the video demo to see the AI Research Agent in action:
 
-![AI Research Agent Demo](static/AI_Research_Agent_Demo_gif.mp4)
+![AI Research Agent Demo](static/AI_Research_Agent_Demo_gif.gif)
 
 *Video shows the complete research workflow from query submission to report generation*
 
@@ -200,4 +200,5 @@ Switch between providers by changing `LLM_PROVIDER` in your `.env` file.
 - AI helped with CSS styling, HTML templates, and loading animations
 
 ---
+
 
