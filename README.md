@@ -200,5 +200,3 @@ Switch between providers by changing `LLM_PROVIDER` in your `.env` file.
 - AI helped with CSS styling, HTML templates, and loading animations
 
 ---
-
-**Note**: This project demonstrates a complete AI agent workflow with modern web interface patterns. The loading system provides excellent user experience during the research process.
